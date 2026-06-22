@@ -162,6 +162,30 @@
 .kpi-card--violet { --kpi-glow: rgba(139,92,246,0.12); }
 .kpi-card--cyan  { --kpi-glow: rgba(6,182,212,0.12); }
 
+.kpi-card__label {
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #475569;
+}
+
+.kpi-card__value {
+  font-family: 'Outfit', sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #E2E8F0;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.kpi-card__sub {
+  font-size: 0.625rem;
+  color: #334155;
+  margin-top: 0.15rem;
+}
+
+
 /* =========================================================
    SIDEBAR NAV ITEMS
    ========================================================= */

@@ -6,10 +6,22 @@ export const documentsApi = {
     return res.data;
   },
 
-  upload: async (formData: FormData) => {
+  /**
+   * Upload a document with real progress tracking.
+   * @param formData - FormData containing file, title, docType
+   * @param onProgress - callback with 0-100 progress value
+   */
+  upload: async (formData: FormData, onProgress?: (pct: number) => void) => {
     const res = await api.post('/documents/upload', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
+      // Do NOT set Content-Type manually — let axios/browser set the
+      // multipart/form-data boundary automatically. Setting it manually
+      // breaks the boundary and causes the server to hang waiting for data.
+      timeout: 5 * 60 * 1000, // 5 minutes for large files
+      onUploadProgress: (progressEvent) => {
+        if (onProgress && progressEvent.total) {
+          const pct = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          onProgress(pct);
+        }
       },
     });
     return res.data;
