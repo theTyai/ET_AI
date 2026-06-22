@@ -191,4 +191,14 @@ router.post('/refresh', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+// GET /auth/plants
+router.get('/plants', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const plants = await UserModel.db.model('Plant').find({});
+    res.json({ success: true, data: plants });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;

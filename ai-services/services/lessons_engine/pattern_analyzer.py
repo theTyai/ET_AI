@@ -67,6 +67,9 @@ async def analyze_incident_pattern(
         return {"patterns": [], "alerts": [], "similarEventIds": []}
 
     # 4. Prompt Gemini to discover if a systemic pattern exists
+    similar_events_str = "\n".join(similar_event_details) if similar_event_details else "None"
+    kg_failures_str = "\n".join(kg_failures) if kg_failures else "None"
+
     prompt = f"""You are an industrial failure pattern miner. Analyze these maintenance and incident events.
 State if there is a systemic issue (e.g. repeated seal failures on pump P-101, repeated electrical trips in Unit-3, near-misses during gas purging).
 Identify a systemic pattern ONLY if there are at least 2 similar historical events.
@@ -76,10 +79,10 @@ CURRENT EVENT DESCRIPTION:
 Equipment tags involved: {equipment_tags}
 
 HISTORICAL SEMANTICALLY MATCHED EVENTS:
-{"\n".join(similar_event_details) or "None"}
+{similar_events_str}
 
 GRAPH FAILURE HISTORY FOR INVOLVED EQUIPMENT:
-{"\n".join(kg_failures) or "None"}
+{kg_failures_str}
 
 Respond in this exact JSON format. Do not wrap in markdown quotes.
 {{

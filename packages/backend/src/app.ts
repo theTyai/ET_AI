@@ -22,7 +22,11 @@ export const createApp = (): Express => {
   const app = express();
 
   // Middleware
-  app.use(helmet());
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    })
+  );
   app.use(
     cors({
       origin: env.FRONTEND_URL,

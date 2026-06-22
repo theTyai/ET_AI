@@ -1,5 +1,5 @@
 from qdrant_client import QdrantClient, AsyncQdrantClient
-from qdrant_client.models import Distance, VectorParams, SparseVectorConfig, SparseVectorParams, SparseIndexParams
+from qdrant_client.models import Distance, VectorParams, SparseVectorParams, SparseIndexParams
 from config.settings import settings
 from loguru import logger
 

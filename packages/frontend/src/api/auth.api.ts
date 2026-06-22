@@ -6,6 +6,11 @@ export const authApi = {
     return res.data;
   },
 
+  listPlants: async () => {
+    const res = await api.get('/auth/plants');
+    return res.data;
+  },
+
   login: async (payload: any) => {
     const res = await api.post('/auth/login', payload);
     return res.data;
