@@ -9,9 +9,11 @@
   ],
   "scripts": {
     "bootstrap": "npm install",
+    "build:shared": "npm run build --workspace=packages/shared",
     "dev:backend": "npm run dev --workspace=packages/backend",
     "dev:frontend": "npm run dev --workspace=packages/frontend",
     "build:backend": "npm run build --workspace=packages/backend",
-    "build:frontend": "npm run build --workspace=packages/frontend"
+    "build:frontend": "npm run build --workspace=packages/frontend",
+    "dev:ai": "cd ai-services && python -m uvicorn main:app --host 127.0.0.1 --port 8000 --reload"
   }
 }

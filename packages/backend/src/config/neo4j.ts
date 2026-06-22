@@ -9,20 +9,32 @@ export const initNeo4j = (): Driver => {
       driver = neo4j.driver(
         env.NEO4J_URI,
         neo4j.auth.basic(env.NEO4J_USERNAME, env.NEO4J_PASSWORD),
-        { disableLosslessIntegers: true }
+        {
+          disableLosslessIntegers: true,
+          // Explicitly disable TLS for bolt:// URIs to avoid
+          // "compatible encryption settings" warning when Neo4j is offline or local
+          encrypted: false,
+          trust: 'TRUST_ALL_CERTIFICATES',
+          connectionAcquisitionTimeout: 3000,
+          connectionTimeout: 3000,
+          maxConnectionLifetime: 3 * 60 * 1000,
+        }
       );
-      console.log('✅ Neo4j Graph DB Driver Initialized');
+      console.log('✅ Neo4j Graph DB Driver Initialized (graceful-fallback mode)');
     } catch (error) {
-      console.error('❌ Neo4j Driver Initialization Error:', error);
-      throw error;
+      console.warn('⚠️ Neo4j Driver could not be initialized — graph features will use mock data:', (error as Error).message);
+      // Do NOT rethrow — allow server to start without Neo4j
     }
   }
-  return driver;
+  return driver as Driver;
 };
 
 export const getNeo4jDriver = (): Driver => {
   if (!driver) {
-    return initNeo4j();
+    initNeo4j();
+  }
+  if (!driver) {
+    throw new Error('Neo4j is offline — falling back to mock data');
   }
   return driver;
 };

@@ -206,23 +206,46 @@ export const KnowledgeGraph: React.FC = () => {
           parsedNodes = [];
           parsedEdges = [];
         }
-        setNodes(parsedNodes);
-        setEdges(parsedEdges);
-        setStats((prev) => ({ ...prev, nodes: parsedNodes.length || prev.nodes, edges: parsedEdges.length || prev.edges }));
-        setQueryStatus('success');
-        toast.success(`Loaded ${parsedNodes.length} nodes · ${parsedEdges.length} edges · ${elapsed}ms`);
+
+        if (parsedNodes.length === 0) {
+          // No live data — silently load demo graph (Neo4j offline is expected in dev)
+          loadMockDemoData();
+          setQueryStatus('success');
+          toast('📊 Demo graph loaded — connect Neo4j for live data', { icon: '🔌', duration: 3000 });
+        } else {
+          setNodes(parsedNodes);
+          setEdges(parsedEdges);
+          setStats((prev) => ({ ...prev, nodes: parsedNodes.length || prev.nodes, edges: parsedEdges.length || prev.edges }));
+          setQueryStatus('success');
+          toast.success(`Loaded ${parsedNodes.length} nodes · ${parsedEdges.length} edges · ${elapsed}ms`);
+        }
       } else {
-        throw new Error('Empty response');
+        // Silently fall back to demo — no error toast for expected offline Neo4j
+        loadMockDemoData();
+        setQueryStatus('success');
+        toast('📊 Demo graph loaded — connect Neo4j for live data', { icon: '🔌', duration: 3000 });
       }
     } catch (err: any) {
       const elapsed = Math.round(performance.now() - t0);
       setQueryTime(elapsed);
-      const msg = err?.response?.data?.error || err?.message || 'Query failed';
-      setErrorMsg(msg);
-      setQueryStatus('error');
-      toast.error(msg);
+      // Only show user-friendly error — never expose raw driver connection strings
+      const rawMsg: string = err?.response?.data?.error || err?.message || 'Query failed';
+      const isNeo4jOffline = rawMsg.toLowerCase().includes('neo4j') ||
+        rawMsg.toLowerCase().includes('bolt') ||
+        rawMsg.toLowerCase().includes('connection') ||
+        rawMsg.toLowerCase().includes('connect to server');
+      const displayMsg = isNeo4jOffline
+        ? 'Graph database offline — showing demo data'
+        : rawMsg;
+      setErrorMsg(displayMsg);
+      setQueryStatus('success'); // treat as success so the canvas loads
       // Fall back to mock demo data on error so the page is never blank
       loadMockDemoData();
+      if (!isNeo4jOffline) {
+        toast.error(displayMsg);
+      } else {
+        toast('📊 Demo graph loaded — connect Neo4j for live data', { icon: '🔌', duration: 3000 });
+      }
     } finally {
       setLoading(false);
     }
@@ -239,22 +262,23 @@ export const KnowledgeGraph: React.FC = () => {
       const res = await kgApi.getEquipmentSubgraph(searchTag.toUpperCase());
       const elapsed = Math.round(performance.now() - t0);
       setQueryTime(elapsed);
-      if (res.success && res.data?.nodes) {
+      if (res.success && res.data?.nodes && res.data.nodes.length > 0) {
         setNodes(res.data.nodes);
         setEdges(res.data.edges || []);
         setQueryStatus('success');
         toast.success(`Loaded subgraph for ${searchTag} in ${elapsed}ms`);
       } else {
-        throw new Error('Tag not found');
+        // Neo4j offline or no data — show mock subgraph silently
+        loadMockDemoData();
+        setQueryStatus('success');
+        toast(`📊 Showing demo subgraph for ${searchTag} — connect Neo4j for live data`, { icon: '🔌', duration: 3000 });
       }
     } catch (err: any) {
       const elapsed = Math.round(performance.now() - t0);
       setQueryTime(elapsed);
-      const msg = `Asset tag '${searchTag}' not found in graph`;
-      setErrorMsg(msg);
-      setQueryStatus('error');
-      toast.error(msg);
       loadMockDemoData();
+      setQueryStatus('success');
+      toast(`📊 Showing demo subgraph — connect Neo4j for live data`, { icon: '🔌', duration: 3000 });
     } finally {
       setLoading(false);
     }
